@@ -1,0 +1,21 @@
+name: Pruebas y SonarQube Cloud
+on:
+  push:
+    branches: [desarrollo]
+  workflow_dispatch:
+jobs:
+  calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -v --cov=productos --cov=main --cov-report=xml
+      - name: Analizar en SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
