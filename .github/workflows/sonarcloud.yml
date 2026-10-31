@@ -1,21 +1,37 @@
-name: Pruebas y SonarQube Cloud
+name: Pruebas y analisis SonarQube Cloud
+
 on:
   push:
-    branches: [desarrollo]
+    branches:
+      - desarrollo
   workflow_dispatch:
+
 jobs:
-  calidad:
+  analizar:
+    name: Pytest y SonarQube
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar codigo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: python -m pytest -v --cov=productos --cov=main --cov-report=xml
-      - name: Analizar en SonarQube Cloud
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ejecutar pruebas y cobertura
+        run: |
+          python -m pytest -v --cov=productos --cov-report=xml:coverage.xml --cov-report=term-missing
+
+      - name: Analizar con SonarQube Cloud
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
